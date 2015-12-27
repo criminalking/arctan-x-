@@ -26,6 +26,7 @@
 *.exe
 *.out
 *.app
+<<<<<<< HEAD
 
 # =========================
 # Operating System Files
@@ -73,3 +74,5 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+=======
+>>>>>>> f37d73657d7195731b3894f58db54e5d388359ab

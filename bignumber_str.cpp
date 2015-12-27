@@ -165,6 +165,61 @@ string Bignumber::PLUS(string number1, string number2)
 	return result;
 }
 
+string Bignumber::MINUS2(string number1, string number2) //ÕıÕû´óÊıÏà¼õ
+{
+	int i;
+	string result = "";
+
+	int length1 = number1.size();
+	int length2 = number2.size();
+
+	if (COMPARE(number2, number1) > 0)
+	{
+		return "-" + MINUS2(number2, number1);
+	}
+
+	reverse(number1.begin(), number1.end());
+	reverse(number2.begin(), number2.end());
+
+	for (i = 0; i < length1 && i < length2; i++)
+	{
+		char c = number1[i] - number2[i] + 48;
+		result = result + c;
+	}
+
+	if (i < length1)
+	{
+		for (; i < length1; i++)
+		{
+			result = result + number1[i];
+		}
+	}
+
+	int carry = 0;
+	for (i = 0; i < (int)result.length(); i++)
+	{
+		int value = result[i] - 48 + carry;
+		if (value < 0)
+		{
+			value = value + 10;
+			carry = -1;
+		}
+		else carry = 0;
+		result[i] = (char)(value + 48);
+	}
+
+	for (i = result.size() - 1; i >= 0; i--)
+	{
+		if (result[i] != '0') break;
+	}
+
+	result = result.substr(0, i + 1);
+
+	reverse(result.begin(), result.end());
+	if (result.length() == 0) result = "0";
+	return result;
+}
+
 string Bignumber::MINUS(string number1, string number2) 
 {
 	int i;
@@ -328,8 +383,9 @@ string Bignumber::MULTIPLY(string number1, string number2)
 	if (flag == 1) result = result.insert(0, 1, '-');//Îª·À´í¸ººÅÔÚ×îºó¼Ó
 	free(allsum);
 	int a;
-	for (a = 0; result[a] != '.'; a++);
-	result = result.erase(a + FLOAT + 1);//±£Ö¤Êä³öµÄĞ¡ÊıÎ»ÊıÎªFLOATÎ»
+	for (a = 0; result[a] != '.' && a < result.length(); a++);
+	if (a < result.length() && result.length() - a - 1 > 30) result = result.erase(a + FLOAT + 1);//±£Ö¤Êä³öµÄĞ¡ÊıÎ»ÊıĞ¡ÓÚFLOATÎ»
+	//if (a < result.length()) result = result.erase(result.find_last_not_of('0'));//ÓĞĞ¡ÊıÇé¿öÏÂÉ¾³ı´ÓºóÍùÇ°¶àÓàµÄ0
 	return result;
 }
 
@@ -357,6 +413,9 @@ string Bignumber::DIVIDE(string number1, string number2, int floatpoint) //ÉÌÊıÏ
 	string tempstr = "";
 	int length1, length2;
 
+	for (i = 0; i < number1.length() && number1[i] != '.'; i++);
+	int aaa = 1;
+	if (number1[i] == '.' && number1.length() - i > FLOAT + 2) number1 = number1.substr(0, i + FLOAT + 1);//½«ÊäÈëµÄĞ¡ÊıÎ»ÊıÏŞ¶¨ÔÚFLOATÎ»
 	////////////////////////È¥µô¿ªÍ·µÄ0£¨Èç0.01±ä³É001£¬È¥µô00£©////////
 	int demi1 = De2int(number1, &number1);
 	length1 = number1.size();
@@ -381,7 +440,7 @@ string Bignumber::DIVIDE(string number1, string number2, int floatpoint) //ÉÌÊıÏ
 		int quotient = 0;
 		while (COMPARE(tempstr, number2) >= 0) {
 			++quotient;
-			tempstr = MINUS(tempstr, number2);
+			tempstr = MINUS2(tempstr, number2);
 		}
 		result = result + (char)(quotient + '0');
 		++pos;
@@ -395,22 +454,25 @@ string Bignumber::DIVIDE(string number1, string number2, int floatpoint) //ÉÌÊıÏ
 
 	////////////////////////ÔÙ¼ÆËãĞ¡Êı²¿·Ö//////////////////////////////
 	if (floatpoint > 0) {
-		for (int k = 0; k < floatpoint - demi1 + demi2; ++k) {
+		int k;
+		for (k = 0; k < floatpoint - demi1 + demi2; ++k) {
 			modd += '0';
 		}
-		length1 = modd.size();
-		tempstr = modd.substr(0, tempstr.length() + 1); //È¡³öÓàÊı¼Ó1Î»
-		pos = tempstr.length() - 1; //±êÖ¾number1ÖĞÔËËãµ½ÁËÄÄÒ»Î»
-		while (pos < length1) {
-			int quotient = 0;
-			while (COMPARE(tempstr, number2) >= 0) {
-				++quotient;
-				tempstr = MINUS(tempstr, number2);
-			}
-			result = result + (char)(quotient + '0');
-			++pos;
-			if (pos < length1) { //ÄÃ³öÏÂÒ»Î»
-				tempstr += modd[pos];
+		if (k != 0) {//²»ĞèÒªÔÙ½øĞĞĞ¡ÊıÔËËã
+			length1 = modd.size();
+			tempstr = modd.substr(0, tempstr.length() + 1); //È¡³öÓàÊı¼Ó1Î»
+			pos = tempstr.length() - 1; //±êÖ¾number1ÖĞÔËËãµ½ÁËÄÄÒ»Î»
+			while (pos < length1) {
+				int quotient = 0;
+				while (COMPARE(tempstr, number2) >= 0) {
+					++quotient;
+					tempstr = MINUS(tempstr, number2);
+				}
+				result = result + (char)(quotient + '0');
+				++pos;
+				if (pos < length1) { //ÄÃ³öÏÂÒ»Î»
+					tempstr += modd[pos];
+				}
 			}
 		}
 	}
@@ -434,3 +496,11 @@ string Bignumber::MOD(string number1, string number2)
 	else return MINUS(number1, MULTIPLY(DIVIDE(number1, number2), number2));
 }
 
+string Bignumber::POW(string x, int k)//Çóx^k
+{
+	string result = "1";
+	for (int i = 0; i < k; i++) {
+		result = MULTIPLY(result, x);
+	}
+	return result;
+}

@@ -384,7 +384,7 @@ string Bignumber::MULTIPLY(string number1, string number2)
 	free(allsum);
 	int a;
 	for (a = 0; result[a] != '.' && a < result.length(); a++);
-	if (a < result.length() && result.length() - a - 1 > 30) result = result.erase(a + FLOAT + 1);//保证输出的小数位数小于FLOAT位
+	if (a < result.length() && result.length() - a - 1 > FLOAT) result = result.erase(a + FLOAT + 1);//保证输出的小数位数小于FLOAT位
 	//if (a < result.length()) result = result.erase(result.find_last_not_of('0'));//有小数情况下删除从后往前多余的0
 	return result;
 }
